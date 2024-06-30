@@ -1,4 +1,5 @@
 #include<iostream>
+#include<fstream>
 #include<string>
 
 using namespace std;
@@ -55,9 +56,17 @@ public:
         cout << last_name << " " << first_name << " " << age << " y/o " << endl;
 
     }
+    virtual std::ostream& info(std::ostream& os)const
+    {
+        return os << last_name << " " << first_name << " " << age << " y/o ";
+
+    }
 };
 
-
+std::ostream& operator <<(std::ostream& os, const Human& obj)
+{
+    return obj.info(os);
+}
 
 #define STUDENT_TAKE_PARAMETERS const std ::string& speciality, const std ::string& group, double rating, double attendance
 #define STUDENT_GIVE_PARAMETERS speciality, group, rating, attendance
@@ -121,10 +130,15 @@ public:
     {
         cout << "SDestructor:\t" << this << endl;
     }
-    void info()const
+    void info()const override
     {
         Human::info();
         cout << speciality << " " << group << " " << rating << " " << attendance << endl;
+    }
+    std::ostream& info(std::ostream& os)const override
+    {
+        Human::info(os);
+        return Human::info(os) << " " << speciality << " " << group << " " << rating << " " << attendance;
     }
 };
 
@@ -136,7 +150,6 @@ public:
     const std::string& get_speciality()const
     {
         return speciality;
-
     }
     unsigned int get_experience()const
     {
@@ -160,7 +173,18 @@ public:
     {
         cout << "TDestructor:\t" << this << endl;
     }
-    class Graduate :public Student
+    void info()const
+    {
+        Human::info();
+        cout << speciality << " " << experience << " " << "years" << endl;
+    }
+    std::ostream& info(std::ostream& os)const
+    {
+        return Human::info(os) << " " << speciality << " " << experience << " " << "years";
+    }
+};
+
+class Graduate :public Student
 {
     std::string subject;
 public:
@@ -188,8 +212,42 @@ public:
         Student::info();
         cout << subject << endl;
     }
+    std::ostream& info(std::ostream& os) const override
+    {
+        return Student::info(os) << " " << subject;
+    }
 };
 
+void Print(Human* group[], const int n)
+{
+    cout << delimiter << endl;
+    for (int i = 0; i < n; i++)
+    {
+        cout << *group[i] << endl;
+        cout << delimiter << endl;
+
+    }
+}
+
+void Clear(Human* group[], const int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        delete group[i];
+    }
+}
+
+void Save(Human* group[], const int n, const std::string& filename)
+{
+    std::ofstream fout(filename);
+    for (int i = 0; i < n; i++)
+    {
+        fout << *group[i] << endl;
+    }
+    fout.close();
+    std::string cmd = "notepad " + filename;
+    system(cmd.c_str());
+}
 
 //#define INHERITANCE_CHECK
 
@@ -215,18 +273,12 @@ void main()
       new Graduate("Schreder", "Hank", 40, "Criminalistic", "OBN", 80, 90, "How to catch Heisenberg"),
       new Student("Vercetty", "Tommy", 30, "Theft", "Vice" ,97, 98)
     };
-    cout << delimiter << endl;
-    for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
-    {
-        //group[i]->info();
-        cout << *group[i] << endl;
-        cout << delimiter << endl;
-    }
 
-    for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
-    {
-        delete group[i];
-    }
+    Print(group, sizeof(group) / (sizeof(group)[0]));
+    Save(group, sizeof(group) / (sizeof(group)[0]), "group.txt");
+
+
+    Clear(group, sizeof(group) / (sizeof(group)[0]));
+
 
 }
-};
